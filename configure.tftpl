@@ -1,0 +1,108 @@
+#!/bin/bash
+RUBRIK_IP=${rubrik_ip}
+RUBRIK_USER=${rubrik_user}
+RUBRIK_PASS=${rubrik_pass}
+RUBRIK_FILESET_NAME_PREFIX=${rubrik_fileset_name_prefix}
+RUBRIK_FILESET_FOLDER_PATH=${rubrik_fileset_folder_path}
+SLA_DOMAIN='Bronze'
+WORKLOAD_IP=${workload_ip}
+
+# aws rubrik cloud cluster es bootstrap
+### this is the problem right now cant authorize this call
+CLUSTER_BOOTSTRAP=$(curl -k -s \
+    -u "$RUBRIK_USER:$RUBRIK_PASS" \
+    --header 'Content-Type':'application/json' \
+    --header 'Accept':'application/json' \
+    -X POST https://$RUBRIK_IP/api/internal/cluster/me/bootstrap \
+    -d "{\"adminUserInfo\":{\"id\":\"admin\",\"emailAddress\":\"vinnie.lee@ahead.com\",\"password\":\"rubrik\"},\"name\":\"aws-ahead-bilh-rubrik-cc-es\",\"dnsNameservers\":[\"8.8.8.8\"],\"dnsSearchDomains\":[],\"ntpServerConfigs\":[{\"server\":\"pool.ntp.org\"}],\"cloudStorageLocation\":{\"awsStorageConfig\":{\"bucketName\":\"rubrik-cc-es-20220602160005230700000001\"}},\"enableSoftwareEncryptionAtRest\":false,\"nodeConfigs\":{\"1\":{\"managementIpConfig\":{\"address\":\"10.0.7.41\",\"netmask\":\"255.255.255.0\",\"gateway\":\"10.0.7.1\"}},\"2\":{\"managementIpConfig\":{\"address\":\"10.0.7.251\",\"netmask\":\"255.255.255.0\",\"gateway\":\"10.0.7.1\"}},\"3\":{\"managementIpConfig\":{\"address\":\"10.0.7.50\",\"netmask\":\"255.255.255.0\",\"gateway\":\"10.0.7.1\"}}}}")
+ 
+ 
+ 
+ 
+ #   -d "{\"hostname\":\"$HOSTNAME\",\"hasAgent\":true}")
+
+# install Rubrik RBS Connector on the workload host
+URL="https://$RUBRIK_IP/connector/rubrik-agent.x86_64.rpm"
+ssh -i curl -k $URL -o /tmp/rubrik-agent.x86_64.rpm
+rpm -i /tmp/rubrik-agent.x86_64.rpm
+
+# get auth token
+TOKEN="Bearer $(curl -k -s -u "$RUBRIK_USER:$RUBRIK_PASS" -X POST https://$RUBRIK_IP/api/v1/session | jq -r '.token')"
+
+# add host to Rubrik
+ADD_HOST=$(curl -k -s \
+    --header "Authorization: $TOKEN" \
+    --header 'Content-Type':'application/json' \
+    --header 'Accept':'application/json' \
+    -X POST https://$RUBRIK_IP/api/v1/host \
+    -d "{\"hostname\":\"$WORKLOAD_IP\",\"hasAgent\":true}")
+MY_HOST_ID=$(echo $ADD_HOST | jq -r '.id')
+if [ $MY_HOST_ID == 'null' ]; then
+    echo $(echo $ADD_HOST | jq -r '.message')
+    echo "Something went wrong adding the host to the Rubrik system, exiting"
+    exit 1
+fi
+
+# check if fileset template exists
+FILESET_TEMPLATES=$(curl -k -s --header "Authorization: $TOKEN" -X GET https://$RUBRIK_IP/api/v1/fileset_template)
+MY_FILESET_TEMPLATE=$(echo $FILESET_TEMPLATES | jq -c ".data[] | select(.includes[]==\"$RUBRIK_FILESET_FOLDER_PATH\")" | jq -r '.id')
+# create fileset template if it does not exist
+if [ -z $MY_FILESET_TEMPLATE ]; then
+    echo "Fileset Template not found, creating..."
+    NEW_FILESET_TEMPLATE=$(curl -k -s \
+        --header "Authorization: $TOKEN" \
+        --header 'Content-Type':'application/json' \
+        --header 'Accept':'application/json' \
+        -X POST https://$RUBRIK_IP/api/v1/fileset_template \
+        -d "{\"name\":\"$RUBRIK_FILESET_NAME_PREFIX: $RUBRIK_FILESET_FOLDER_PATH\",\"includes\":[\"$RUBRIK_FILESET_FOLDER_PATH\"],\"operatingSystemType\":\"Linux\"}"
+        )
+    MY_FILESET_TEMPLATE=$(echo $NEW_FILESET_TEMPLATE | jq -r '.id')
+else
+    echo "Fileset Template found"
+fi
+# check that fileset exists
+MY_FILESET=$(curl -k -s --header "Authorization: $TOKEN" -X GET \
+    "https://$RUBRIK_IP/api/v1/fileset?host_id=$MY_HOST_ID&template_id=$MY_FILESET_TEMPLATE" | jq -r '.data[0].id')
+if [ $MY_FILESET == 'null' ]; then
+    echo "Fileset not found, creating..."
+    NEW_FILESET=$(curl -k -s \
+        --header "Authorization: $TOKEN" \
+        --header 'Content-Type':'application/json' \
+        --header 'Accept':'application/json' \
+        -X POST https://$RUBRIK_IP/api/v1/fileset \
+        -d "{\"hostId\": \"$MY_HOST_ID\",\"templateId\": \"$MY_FILESET_TEMPLATE\"}"
+        )
+    MY_FILESET=$(echo $NEW_FILESET | jq -r '.id')
+else
+    echo "Fileset found"
+fi
+
+# check if sla domain exists
+SLA_DOMAINS=$(curl -k -s --header "Authorization: $TOKEN" -X GET https://$RUBRIK_IP/api/v1/sla_domain)
+MY_SLA_DOMAIN=$(echo $SLA_DOMAINS | jq -c ".data[] | select(.name==\"$SLA_DOMAIN\")" | jq -r '.id')
+if [ -z $MY_SLA_DOMAIN ]; then
+    echo "SLA Domain $SLA_DOMAIN not found on Rubrik system, exiting"
+    exit 1
+fi
+
+
+# take rubrik on demand snapshot (backup)
+SNAPSHOT_REQ=$(curl -k -s \
+    --header "Authorization: $TOKEN" -X POST \
+    --header 'Content-Type: application/json' \
+    --header 'Accept: application/json' \
+    "https://$RUBRIK_IP/api/v1/fileset/$MY_FILESET/snapshot" \
+    -d "{\"slaId\":\"$MY_SLA_DOMAIN\"}")
+SNAPSHOT_URL=$(echo $SNAPSHOT_REQ | jq -r '.links[0].href')
+SNAPSHOT_STATUS=$(echo $SNAPSHOT_REQ | jq -r '.status')
+while [ $SNAPSHOT_STATUS != 'SUCCEEDED' ] && [ $SNAPSHOT_STATUS != 'FAILED' ]
+do
+    echo "Snapshot status is $SNAPSHOT_STATUS, sleeping..."
+    sleep 5
+    SNAPSHOT_STATUS=$(curl -k -s \
+        --header "Authorization: $TOKEN" -X GET \
+        $SNAPSHOT_URL | jq -r '.status')
+done
+echo "Snapshot done"
+
+exit 0
