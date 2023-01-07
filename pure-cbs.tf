@@ -172,17 +172,17 @@ resource "aws_iam_role_policy" "cbs_role_policy" {
 }
 resource "cbs_array_aws" "cbs_aws" {
   # make a script for removing cbs instance:
-      # PURE_IP=10.0.2.222
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost disconnect linux-iscsi-host --vol epic-iscsi-vol
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost disconnect backup-proxy --vol backup-proxy-iscsi-vol
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost delete linux-iscsi-host
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost delete backup-proxy
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol destroy epic-iscsi-vol
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol destroy backup-proxy-iscsi-vol
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol eradicate epic-iscsi-vol
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol eradicate backup-proxy-iscsi-vol
-      # TOKEN=$(ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purearray factory-reset-token create | cut -d " " -f 3 | tr -d "[:space:]")
-      # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purearray erase --factory-reset-token $TOKEN --eradicate-all-data
+  # PURE_IP=10.0.2.222
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost disconnect linux-iscsi-host --vol epic-iscsi-vol
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost disconnect backup-proxy --vol backup-proxy-iscsi-vol
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost delete linux-iscsi-host
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purehost delete backup-proxy
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol destroy epic-iscsi-vol
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol destroy backup-proxy-iscsi-vol
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol eradicate epic-iscsi-vol
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purevol eradicate backup-proxy-iscsi-vol
+  # TOKEN=$(ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purearray factory-reset-token create | cut -d " " -f 3 | tr -d "[:space:]")
+  # ssh -i /home/ec2-user/.ssh/bilh_aws_demo_master_key -oStrictHostKeyChecking=no pureuser@$PURE_IP purearray erase --factory-reset-token $TOKEN --eradicate-all-data
 
   # Prevents a successful 'terraform destroy' on Pure Cloud Block Store instances
   # To deprovisoin Pure CBS: 
