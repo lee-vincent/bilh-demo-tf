@@ -18,16 +18,6 @@ resource "null_resource" "ip_check" {
     command     = "echo -n $(curl https://icanhazip.com --silent)/32 > ip.txt"
   }
 }
-# script fileset and snap
-# https://github.com/rubrikinc/rubrik-scripts-for-bash/blob/master/Filesets/create_fileset_and_snapshot.sh
-module "rubrik-cloud-cluster" {
-  source                                   = "git::https://github.com/lee-vincent/terraform-aws-rubrik-cloud-cluster-es.git"
-  aws_region                               = var.aws_region
-  aws_subnet_id                            = aws_subnet.rubrik.id
-  security_group_id_inbound_ssh_https_mgmt = aws_security_group.bastion.id
-  aws_public_key_name                      = var.bilh_aws_demo_master_key_name
-  aws_disable_api_termination              = false
-}
 resource "aws_vpc" "cbs_vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
