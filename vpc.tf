@@ -1,3 +1,6 @@
+resource "random_id" "demo_id" {
+  byte_length = 4
+}
 resource "null_resource" "get_my_ip" {
   # always check for a new workstation ip
   triggers = {
@@ -45,7 +48,7 @@ provider "aws" {
 resource "aws_vpc" "tf_vpc" {
   cidr_block = "10.16.0.0/16"
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-vpc")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-vpc", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -56,7 +59,7 @@ resource "aws_subnet" "web" {
   cidr_block        = "10.16.1.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-web-subnet")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-web-subnet", "${random_id.demo_id.id}")
   }
 }
 resource "aws_subnet" "app" {
@@ -64,7 +67,7 @@ resource "aws_subnet" "app" {
   cidr_block        = "10.16.2.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-app-subnet")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-app-subnet", "${random_id.demo_id.id}")
   }
 }
 resource "aws_subnet" "db" {
@@ -72,7 +75,7 @@ resource "aws_subnet" "db" {
   cidr_block        = "10.16.3.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-db-subnet")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-db-subnet", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -81,7 +84,7 @@ resource "aws_subnet" "db" {
 resource "aws_internet_gateway" "tf_internet_gateway" {
   vpc_id = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -90,7 +93,7 @@ resource "aws_internet_gateway" "tf_internet_gateway" {
 resource "aws_eip" "tf_nat_gateway_eip" {
   vpc = true
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway-eip")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway-eip", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -100,7 +103,7 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
   allocation_id = aws_eip.tf_nat_gateway_eip.id
   subnet_id     = aws_subnet.web.id
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway", "${random_id.demo_id.id}")
   }
   # add an explicit dependency on the Internet Gateway for the VPC to ensure proper ordering
   depends_on = [aws_internet_gateway.tf_internet_gateway]
@@ -113,7 +116,7 @@ resource "aws_security_group" "bastion" {
   description = "Allow inbound SSH from my workstation IP"
   vpc_id      = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup", "${random_id.demo_id.id}")
   }
   ingress {
     description = "allow ssh from my workstation ip"
@@ -147,7 +150,7 @@ resource "aws_route_table" "tf_routetable_web_main" {
     gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main", "${random_id.demo_id.id}")
   }
 }
 resource "aws_route_table" "tf_routetable_app_db_private" {
@@ -157,7 +160,7 @@ resource "aws_route_table" "tf_routetable_app_db_private" {
     gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -168,7 +171,7 @@ resource "aws_main_route_table_association" "web_main" {
   route_table_id = aws_route_table.tf_routetable_web_main.id
 }
 resource "aws_route_table_association" "web_subnet" {
-  subnet_id      = aws_subnet.web
+  subnet_id      = aws_subnet.web.id
   route_table_id = aws_route_table.tf_routetable_web_main.id
 }
 resource "aws_route_table_association" "app_subnet" {
@@ -194,6 +197,9 @@ data "aws_ami" "amazon_linux2" {
 resource "aws_key_pair" "bilh_demo_key_pair" {
   key_name   = var.bilh_aws_demo_master_key_name
   public_key = var.bilh_aws_demo_master_key_pub
+  tags = {
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-keypair", "${random_id.demo_id.id}")
+  }
 }
 resource "aws_instance" "bastion_instance" {
   ami                    = data.aws_ami.amazon_linux2.image_id
@@ -202,7 +208,7 @@ resource "aws_instance" "bastion_instance" {
   subnet_id              = aws_subnet.web.id
   key_name               = var.bilh_aws_demo_master_key_name
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-bastion")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion", "${random_id.demo_id.id}")
   }
   user_data                   = <<-EOF
     #!/bin/bash
