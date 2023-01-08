@@ -320,6 +320,10 @@ data "aws_ami" "amazon_linux2" {
     values = ["x86_64"]
   }
 }
+resource "aws_key_pair" "bilh_demo_key_pair" {
+  key_name   = var.bilh_aws_demo_master_key_name
+  public_key = var.bilh_aws_demo_master_key_pub
+}
 resource "aws_instance" "bastion_instance" {
   ami                    = data.aws_ami.amazon_linux2.image_id
   instance_type          = var.aws_bastion_instance_type
@@ -331,11 +335,9 @@ resource "aws_instance" "bastion_instance" {
   }
   user_data                   = <<-EOF
     #!/bin/bash
-    touch /home/ec2-user/.ssh/bilh_aws_demo_master_key
-    chown ec2-user:ec2-user /home/ec2-user/.ssh/bilh_aws_demo_master_key
-    echo "${var.bilh_aws_demo_master_key}" > /home/ec2-user/.ssh/bilh_aws_demo_master_key
-    chmod 0400 /home/ec2-user/.ssh/bilh_aws_demo_master_key
-    yum -y install jq
+    touch /home/ec2-user/config-file
+    chown ec2-user:ec2-user /home/ec2-user/.config-file
+    echo "some text" > /home/ec2-user/.config-file
   EOF
   associate_public_ip_address = true
 }
