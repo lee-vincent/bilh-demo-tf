@@ -1,14 +1,4 @@
-provider "aws" {
-  region  = var.aws_region
-  profile = var.aws_profile
-}
-data "local_sensitive_file" "ip" {
-  depends_on = [
-    null_resource.ip_check,
-  ]
-  filename = "${path.module}/ip.txt"
-}
-resource "null_resource" "ip_check" {
+resource "null_resource" "get_my_ip" {
   # always check for a new workstation ip
   triggers = {
     always_run = "${timestamp()}"
@@ -18,169 +8,119 @@ resource "null_resource" "ip_check" {
     command     = "echo -n $(curl https://icanhazip.com --silent)/32 > ip.txt"
   }
 }
-resource "aws_vpc" "cbs_vpc" {
-  cidr_block = "10.0.0.0/16"
+data "local_sensitive_file" "ip" {
+  depends_on = [
+    null_resource.get_my_ip,
+  ]
+  filename = "${path.module}/ip.txt"
+}
+resource "null_resource" "ip_check_modified" {
+  depends_on = [
+    data.local_sensitive_file.ip
+  ]
+  triggers = {
+    run_on_file_hash_change = md5(data.local_sensitive_file.ip.content)
+  }
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = "echo -n $(curl https://icanhazip.com --silent)/32 > updated_ip.txt"
+  }
+}
+data "local_sensitive_file" "updated_ip" {
+  depends_on = [
+    null_resource.ip_check_modified,
+  ]
+  filename = "${path.module}/updated_ip.txt"
+}
+################################################################################
+#  Configure AWS provider (plugin) with AWS Region and AWS cli Profile to use  #
+################################################################################
+provider "aws" {
+  region  = var.aws_region
+  profile = var.aws_profile
+}
+################################################################################
+#                                 VPC Creation                                 #
+################################################################################
+resource "aws_vpc" "tf_vpc" {
+  cidr_block = "10.16.0.0/16"
   tags = {
     Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-vpc")
   }
 }
-resource "aws_subnet" "sys" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.1.0/24"
+################################################################################
+#                              Subnet Creation                                 #
+################################################################################
+resource "aws_subnet" "web" {
+  vpc_id            = aws_vpc.tf_vpc.id
+  cidr_block        = "10.16.1.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-sys-subnet")
+    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-web-subnet")
   }
 }
-resource "aws_subnet" "mgmt" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.2.0/24"
+resource "aws_subnet" "app" {
+  vpc_id            = aws_vpc.tf_vpc.id
+  cidr_block        = "10.16.2.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-mgmt-subnet")
+    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-app-subnet")
   }
 }
-resource "aws_subnet" "repl" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.3.0/24"
+resource "aws_subnet" "db" {
+  vpc_id            = aws_vpc.tf_vpc.id
+  cidr_block        = "10.16.3.0/24"
   availability_zone = format("%s%s", var.aws_region, var.aws_zone)
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-repl-subnet")
+    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-db-subnet")
   }
 }
-resource "aws_subnet" "iscsi" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.4.0/24"
-  availability_zone = format("%s%s", var.aws_region, var.aws_zone)
+################################################################################
+#                    Create and Attach Internet Gateway                        #
+################################################################################
+resource "aws_internet_gateway" "tf_internet_gateway" {
+  vpc_id = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-iscsi-subnet")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway")
   }
 }
-resource "aws_subnet" "public" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.5.0/24"
-  availability_zone = format("%s%s", var.aws_region, var.aws_zone)
-  tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-public-subnet")
-  }
-}
-resource "aws_subnet" "workload" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.6.0/24"
-  availability_zone = format("%s%s", var.aws_region, var.aws_zone)
-  tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-workload-subnet")
-  }
-}
-resource "aws_subnet" "rubrik" {
-  vpc_id            = aws_vpc.cbs_vpc.id
-  cidr_block        = "10.0.7.0/24"
-  availability_zone = format("%s%s", var.aws_region, var.aws_zone)
-  tags = {
-    Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-rubrik-subnet")
-  }
-}
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id          = aws_vpc.cbs_vpc.id
-  service_name    = format("%s%s%s", "com.amazonaws.", var.aws_region, ".s3")
-  route_table_ids = [aws_route_table.cbs_routetable.id]
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-s3endpoint")
-  }
-}
-resource "aws_vpc_endpoint" "dynamodb" {
-  vpc_id          = aws_vpc.cbs_vpc.id
-  service_name    = format("%s%s%s", "com.amazonaws.", var.aws_region, ".dynamodb")
-  route_table_ids = [aws_route_table.cbs_routetable.id]
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-dynamodbendpoint")
-  }
-}
-resource "aws_internet_gateway" "cbs_internet_gateway" {
-  vpc_id = aws_vpc.cbs_vpc.id
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-internet-gateway")
-  }
-}
-resource "aws_eip" "cbs_nat_gateway_eip" {
+################################################################################
+#                    Create Elastic IP for NAT Gateway                         #
+################################################################################
+resource "aws_eip" "tf_nat_gateway_eip" {
   vpc = true
   tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-internet-gateway-eip")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway-eip")
   }
 }
-resource "aws_nat_gateway" "cbs_nat_gateway" {
-  allocation_id = aws_eip.cbs_nat_gateway_eip.id
-  subnet_id     = aws_subnet.public.id
+################################################################################
+#                       Create and Attach NAT Gateway                          #
+################################################################################
+resource "aws_nat_gateway" "tf_nat_gateway" {
+  allocation_id = aws_eip.tf_nat_gateway_eip.id
+  subnet_id     = aws_subnet.web.id
   tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-nat-gateway")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway")
   }
-
-  # To ensure proper ordering, it is recommended to add an explicit dependency
-  # on the Internet Gateway for the VPC.
-  depends_on = [aws_internet_gateway.cbs_internet_gateway]
+  # add an explicit dependency on the Internet Gateway for the VPC to ensure proper ordering
+  depends_on = [aws_internet_gateway.tf_internet_gateway]
 }
-resource "aws_security_group" "cbs_repl" {
-  name        = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-repl-securitygroup")
-  description = "Replication Network Traffic"
-  vpc_id      = aws_vpc.cbs_vpc.id
-
-  ingress {
-    description = "repl"
-    from_port   = 8117
-    to_port     = 8117
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "repl"
-    from_port   = 8117
-    to_port     = 8117
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    description = "https"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-repl-securitygroup")
-  }
-}
-resource "aws_security_group" "cbs_iscsi" {
-  name        = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-iscsi-securitygroup")
-  description = "ISCSI Network Traffic"
-  vpc_id      = aws_vpc.cbs_vpc.id
-
-  ingress {
-    description = "iscsi"
-    from_port   = 3260
-    to_port     = 3260
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-iscsi-securitygroup")
-  }
-}
+################################################################################
+#                          Create SSH Security Group                           #
+################################################################################
 resource "aws_security_group" "bastion" {
-  name        = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-bastion-securitygroup")
+  name        = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup")
   description = "Allow inbound SSH from my workstation IP"
-  vpc_id      = aws_vpc.cbs_vpc.id
+  vpc_id      = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-bastion-securitygroup")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup")
   }
   ingress {
     description = "allow ssh from my workstation ip"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${data.local_sensitive_file.ip.content}"]
+    cidr_blocks = ["${data.local_sensitive_file.updated_ip.content}"]
   }
   ingress {
     description = "allow all inbound traffic from this security group"
@@ -197,116 +137,47 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-resource "aws_security_group" "cbs_mgmt" {
-  name        = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-mgmt-securitygroup")
-  description = "Management Network Traffic"
-  vpc_id      = aws_vpc.cbs_vpc.id
-
-  ingress {
-    description = "ssh"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    description = "http"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    description = "https"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    description = "array"
-    from_port   = 8084
-    to_port     = 8084
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    description = "https"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    description = "ssh"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    self        = true
-  }
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-mgmt-securitygroup")
-  }
-}
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.cbs_routetable_public.id
-}
-resource "aws_route_table_association" "rubrik" {
-  subnet_id      = aws_subnet.rubrik.id
-  route_table_id = aws_route_table.cbs_routetable.id
-}
-resource "aws_route_table_association" "sys" {
-  subnet_id      = aws_subnet.sys.id
-  route_table_id = aws_route_table.cbs_routetable.id
-}
-resource "aws_route_table_association" "workload" {
-  subnet_id      = aws_subnet.workload.id
-  route_table_id = aws_route_table.cbs_routetable.id
-}
-resource "aws_route_table_association" "mgmt" {
-  subnet_id      = aws_subnet.mgmt.id
-  route_table_id = aws_route_table.cbs_routetable.id
-}
-resource "aws_route_table" "cbs_routetable" {
-  vpc_id = aws_vpc.cbs_vpc.id
-
+################################################################################
+#                              Create Route Tables                             #
+################################################################################
+resource "aws_route_table" "tf_routetable_main" {
+  vpc_id = aws_vpc.tf_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.cbs_nat_gateway.id
+    gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
-
   tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-routetable")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-main")
   }
 }
-resource "aws_route_table" "cbs_routetable_public" {
-  vpc_id = aws_vpc.cbs_vpc.id
-
+resource "aws_route_table" "tf_routetable_web" {
+  vpc_id = aws_vpc.tf_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.cbs_internet_gateway.id
+    gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
-
   tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-routetable-public")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web")
   }
 }
-resource "aws_route_table" "cbs_routetable_main" {
-  vpc_id = aws_vpc.cbs_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.cbs_nat_gateway.id
-  }
-
-  tags = {
-    Name = format("%s%s", aws_vpc.cbs_vpc.tags.Name, "-routetable-main")
-  }
-}
+################################################################################
+#                         Create Route Table Associations                      #
+################################################################################
 resource "aws_main_route_table_association" "main" {
-  vpc_id         = aws_vpc.cbs_vpc.id
-  route_table_id = aws_route_table.cbs_routetable_main.id
+  vpc_id         = aws_vpc.tf_vpc.id
+  route_table_id = aws_route_table.tf_routetable_main.id
+}
+resource "aws_route_table_association" "web" {
+  subnet_id      = aws_subnet.web.id
+  route_table_id = aws_route_table.tf_routetable_web.id
+}
+resource "aws_route_table_association" "app" {
+  subnet_id      = aws_subnet.app.id
+  route_table_id = aws_route_table.tf_routetable_main.id
+}
+resource "aws_route_table_association" "db" {
+  subnet_id      = aws_subnet.db.id
+  route_table_id = aws_route_table.tf_routetable_main.id
 }
 data "aws_ami" "amazon_linux2" {
   owners      = ["amazon"]
@@ -328,16 +199,30 @@ resource "aws_instance" "bastion_instance" {
   ami                    = data.aws_ami.amazon_linux2.image_id
   instance_type          = var.aws_bastion_instance_type
   vpc_security_group_ids = [aws_security_group.bastion.id]
-  subnet_id              = aws_subnet.public.id
+  subnet_id              = aws_subnet.web.id
   key_name               = var.bilh_aws_demo_master_key_name
   tags = {
     Name = format("%s%s%s", var.aws_prefix, var.aws_region, "-bastion")
   }
   user_data                   = <<-EOF
     #!/bin/bash
-    touch /home/ec2-user/config-file
-    chown ec2-user:ec2-user /home/ec2-user/.config-file
-    echo "some text" > /home/ec2-user/.config-file
+    touch /home/ec2-user/example-config-file
+    chown ec2-user:ec2-user /home/ec2-user/example-config-file
+    echo "some text" > /home/ec2-user/example-config-file
   EOF
   associate_public_ip_address = true
 }
+# un-comment when running terraform import aws_instance.console_created instance-id
+# could i auto find the instance id using a data resource and special tag?
+# resource "aws_instance" "console_created" {
+#   ami                    = "ami-0b5eea76982371e91"
+#   instance_type          = "t2.micro"
+#   vpc_security_group_ids = [aws_security_group.bastion.id]
+#   subnet_id              = aws_subnet.web.id
+#   key_name               = var.bilh_aws_demo_master_key_name
+#   tags = {
+#     Name       = "console-created",
+#     automation = "terraform-managed"
+#   }
+#   associate_public_ip_address = true
+# }

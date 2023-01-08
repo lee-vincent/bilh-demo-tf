@@ -5,24 +5,15 @@
 
 [![AHEAD](https://public-bucket-general.s3.amazonaws.com/AHEAD-logo-bluebackground-90x19px.png)](https://ahead.com)
 
+## Terraform Providers Used (plugins)
 
-This is the description
+| Plugin | Documentation |
+| ------ | ------ |
+| AWS | [hashicorp/aws/4.49.0][pvdaws] |
+| null | [hashicorp/null/3.2.1][pvdnul] |
+| local | [hashicorp/local/2.2.3][pvdlcl] |
 
-- section 1
-- section 2
-- ✨ profit ✨
-
-## Features
-
-- Import a HTML file and watch it magically convert to Markdown
-- Drag and drop images (requires your Dropbox account be linked)
-- Import and save files from GitHub, Dropbox, Google Drive and One Drive
-- Drag and drop markdown and HTML files into Dillinger
-- Export documents as Markdown, HTML and PDF
-
-Markdown is a lightweight markup language based on the formatting conventions
-that people naturally use in email.
-As [John Gruber] writes on the [Markdown site][df1]
+This is the description of the demo. As [John Gruber] writes on the [Markdown site][df1]
 
 > The overriding design goal for Markdown's
 > formatting syntax is to make it as readable
@@ -32,9 +23,28 @@ As [John Gruber] writes on the [Markdown site][df1]
 > looking like it's been marked up with tags
 > or formatting instructions.
 
-This text you see here is *actually- written in Markdown! To get a feel
-for Markdown's syntax, type some text into the left window and
-watch the results in the right.
+## Agenda
+
+- implicit resource creation ordering/dependencies and dependson
+- resources
+- names
+- state files
+- local state
+- remote state
+- modules for something like wordpress?
+- packer for ami wordpress
+- github commit/pull request workflow
+- terraform cloud
+- import a resource
+- terraform import aws_instance.console_created i-06e725a25c0335c27
+- make sure the ami id matches - maybe use a data source
+- what about ebs snapshots with commvault?
+- terraform functions
+- variables
+- local-exec scripting
+- data sources
+- terminate instance with console - run tf plan
+- use hash function on ip.txt to detect if anything changed and trigger on change, not every time
 
 ## Tech
 
@@ -73,19 +83,6 @@ npm install --production
 NODE_ENV=production node app
 ```
 
-## Plugins
-
-Dillinger is currently extended with the following plugins.
-Instructions on how to use them in your own application are linked below.
-
-| Plugin | README |
-| ------ | ------ |
-| Dropbox | [plugins/dropbox/README.md][PlDb] |
-| GitHub | [plugins/github/README.md][PlGh] |
-| Google Drive | [plugins/googledrive/README.md][PlGd] |
-| OneDrive | [plugins/onedrive/README.md][PlOd] |
-| Medium | [plugins/medium/README.md][PlMe] |
-| Google Analytics | [plugins/googleanalytics/README.md][PlGa] |
 
 ## Development
 
@@ -184,9 +181,6 @@ MIT
    [AngularJS]: <http://angularjs.org>
    [Gulp]: <http://gulpjs.com>
 
-   [PlDb]: <https://github.com/joemccann/dillinger/tree/master/plugins/dropbox/README.md>
-   [PlGh]: <https://github.com/joemccann/dillinger/tree/master/plugins/github/README.md>
-   [PlGd]: <https://github.com/joemccann/dillinger/tree/master/plugins/googledrive/README.md>
-   [PlOd]: <https://github.com/joemccann/dillinger/tree/master/plugins/onedrive/README.md>
-   [PlMe]: <https://github.com/joemccann/dillinger/tree/master/plugins/medium/README.md>
-   [PlGa]: <https://github.com/RahulHP/dillinger/blob/master/plugins/googleanalytics/README.md>
+   [pvdaws]: <https://registry.terraform.io/providers/hashicorp/aws/4.49.0>
+   [pvdnul]: <https://registry.terraform.io/providers/hashicorp/null/3.2.1>
+   [pvdlcl]: <https://registry.terraform.io/providers/hashicorp/local/2.2.3>

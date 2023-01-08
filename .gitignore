@@ -20,7 +20,7 @@ aws-error.json
 
 # public IP address
 ip.txt
-
+updated_ip.txt
 # Ignore override files as they are usually used to override resources locally
 override.tf
 override.tf.json
