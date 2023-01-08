@@ -84,7 +84,7 @@ resource "aws_subnet" "db" {
 resource "aws_internet_gateway" "tf_internet_gateway" {
   vpc_id = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-internet-gateway", "-${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -93,7 +93,7 @@ resource "aws_internet_gateway" "tf_internet_gateway" {
 resource "aws_eip" "tf_nat_gateway_eip" {
   vpc = true
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway-eip", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-nat-gateway-eip", "-${random_id.demo_id.id}")
   }
 }
 ################################################################################
@@ -103,7 +103,7 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
   allocation_id = aws_eip.tf_nat_gateway_eip.id
   subnet_id     = aws_subnet.web.id
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-nat-gateway", "-${random_id.demo_id.id}")
   }
   # add an explicit dependency on the Internet Gateway for the VPC to ensure proper ordering
   depends_on = [aws_internet_gateway.tf_internet_gateway]
@@ -112,11 +112,14 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
 #                          Create SSH Security Group                           #
 ################################################################################
 resource "aws_security_group" "bastion" {
-  name        = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup")
+  lifecycle {
+    create_before_destroy = true
+  }
+  name        = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion-securitygroup", "-${random_id.demo_id.id}")
   description = "Allow inbound SSH from my workstation IP"
   vpc_id      = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-bastion-securitygroup", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion-securitygroup", "-${random_id.demo_id.id}")
   }
   ingress {
     description = "allow ssh from my workstation ip"
@@ -150,7 +153,7 @@ resource "aws_route_table" "tf_routetable_web_main" {
     gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-web-main", "-${random_id.demo_id.id}")
   }
 }
 resource "aws_route_table" "tf_routetable_app_db_private" {
@@ -160,7 +163,7 @@ resource "aws_route_table" "tf_routetable_app_db_private" {
     gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
   tags = {
-    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-app-db-private", "-${random_id.demo_id.id}")
   }
 }
 ################################################################################
