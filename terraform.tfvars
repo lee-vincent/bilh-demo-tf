@@ -1,7 +1,7 @@
 # See blog at https://davidstamen.com/2021/07/26/pure-cloud-block-store-on-aws-jump-start/ for more information on AWS Jump Start
 
 # AWS Variables
-aws_prefix  = "tf-cbs-"
+aws_prefix  = "tf-bilh-"
 aws_region  = "us-east-1"
 aws_profile = "iamadmin-bilh-tf"
 # If multiple private subnets are used for Cloud Block Store, they must be all in the same Availability zone.

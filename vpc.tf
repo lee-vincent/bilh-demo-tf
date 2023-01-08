@@ -90,7 +90,7 @@ resource "aws_internet_gateway" "tf_internet_gateway" {
 resource "aws_eip" "tf_nat_gateway_eip" {
   vpc = true
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-internet-gateway-eip")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway-eip")
   }
 }
 ################################################################################
@@ -140,44 +140,44 @@ resource "aws_security_group" "bastion" {
 ################################################################################
 #                              Create Route Tables                             #
 ################################################################################
-resource "aws_route_table" "tf_routetable_main" {
-  vpc_id = aws_vpc.tf_vpc.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.tf_nat_gateway.id
-  }
-  tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-main")
-  }
-}
-resource "aws_route_table" "tf_routetable_web" {
+resource "aws_route_table" "tf_routetable_web_main" {
   vpc_id = aws_vpc.tf_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web")
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main")
+  }
+}
+resource "aws_route_table" "tf_routetable_app_db_private" {
+  vpc_id = aws_vpc.tf_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.tf_nat_gateway.id
+  }
+  tags = {
+    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private")
   }
 }
 ################################################################################
 #                         Create Route Table Associations                      #
 ################################################################################
-resource "aws_main_route_table_association" "main" {
+resource "aws_main_route_table_association" "web_main" {
   vpc_id         = aws_vpc.tf_vpc.id
-  route_table_id = aws_route_table.tf_routetable_main.id
+  route_table_id = aws_route_table.tf_routetable_web_main.id
 }
-resource "aws_route_table_association" "web" {
-  subnet_id      = aws_subnet.web.id
-  route_table_id = aws_route_table.tf_routetable_web.id
+resource "aws_route_table_association" "web_subnet" {
+  subnet_id      = aws_subnet.web
+  route_table_id = aws_route_table.tf_routetable_web_main.id
 }
-resource "aws_route_table_association" "app" {
+resource "aws_route_table_association" "app_subnet" {
   subnet_id      = aws_subnet.app.id
-  route_table_id = aws_route_table.tf_routetable_main.id
+  route_table_id = aws_route_table.tf_routetable_app_db_private.id
 }
-resource "aws_route_table_association" "db" {
+resource "aws_route_table_association" "db_subnet" {
   subnet_id      = aws_subnet.db.id
-  route_table_id = aws_route_table.tf_routetable_main.id
+  route_table_id = aws_route_table.tf_routetable_app_db_private.id
 }
 data "aws_ami" "amazon_linux2" {
   owners      = ["amazon"]
