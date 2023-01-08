@@ -236,7 +236,6 @@ resource "aws_instance" "bastion_instance" {
 #   key_name               = var.bilh_aws_demo_master_key_name
 #   tags = {
 #     Name       = "console-created",
-#     automation = "terraform-managed"
 #   }
 #   associate_public_ip_address = true
 # }
