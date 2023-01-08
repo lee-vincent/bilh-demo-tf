@@ -103,7 +103,7 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
   allocation_id = aws_eip.tf_nat_gateway_eip.id
   subnet_id     = aws_subnet.web.id
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway", "${random_id.demo_id.id}")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-nat-gateway", "${random_id.demo_id.id}")
   }
   # add an explicit dependency on the Internet Gateway for the VPC to ensure proper ordering
   depends_on = [aws_internet_gateway.tf_internet_gateway]
@@ -150,7 +150,7 @@ resource "aws_route_table" "tf_routetable_web_main" {
     gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main", "${random_id.demo_id.id}")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-web-main", "${random_id.demo_id.id}")
   }
 }
 resource "aws_route_table" "tf_routetable_app_db_private" {
@@ -160,7 +160,7 @@ resource "aws_route_table" "tf_routetable_app_db_private" {
     gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
   tags = {
-    Name = format("%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private", "${random_id.demo_id.id}")
+    Name = format("%s%s%s", aws_vpc.tf_vpc.tags.Name, "-routetable-private", "${random_id.demo_id.id}")
   }
 }
 ################################################################################
