@@ -12,6 +12,7 @@
 | AWS | [hashicorp/aws/4.49.0][pvdaws] |
 | null | [hashicorp/null/3.2.1][pvdnul] |
 | local | [hashicorp/local/2.2.3][pvdlcl] |
+| random | [hashicorp/random/3.4.3][pvdrnd] |
 
 This is the description of the demo. As [John Gruber] writes on the [Markdown site][df1]
 
@@ -184,3 +185,4 @@ MIT
    [pvdaws]: <https://registry.terraform.io/providers/hashicorp/aws/4.49.0>
    [pvdnul]: <https://registry.terraform.io/providers/hashicorp/null/3.2.1>
    [pvdlcl]: <https://registry.terraform.io/providers/hashicorp/local/2.2.3>
+   [pvdrnd]: <https://registry.terraform.io/providers/hashicorp/random/3.4.3>
