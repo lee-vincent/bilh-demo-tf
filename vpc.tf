@@ -41,6 +41,11 @@ data "local_sensitive_file" "updated_ip" {
 provider "aws" {
   region  = var.aws_region
   profile = var.aws_profile
+  default_tags {
+    tags = {
+      automation = "terraform-managed"
+    }
+  }
 }
 ################################################################################
 #                                 VPC Creation                                 #
