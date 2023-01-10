@@ -128,14 +128,23 @@ resource "aws_security_group" "wordpress" {
 ################################################################################
 #                              Create Route Tables                             #
 ################################################################################
-resource "aws_route_table" "tf_routetable_web_main" {
+
+resource "aws_default_route_table" "default_main" {
+  default_route_table_id = aws_vpc.tf_vpc.default_route_table_id
+  # add tags to the default route table but never add routes to it
+  # so new subnets with explicit associations just have routes to local
+  tags = {
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-default-main", "-${random_id.demo_id.id}")
+  }
+}
+resource "aws_route_table" "tf_routetable_web_public" {
   vpc_id = aws_vpc.tf_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.tf_internet_gateway.id
   }
   tags = {
-    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-web-main", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-web-public", "-${random_id.demo_id.id}")
   }
 }
 resource "aws_route_table" "tf_routetable_app_db_private" {
@@ -151,13 +160,13 @@ resource "aws_route_table" "tf_routetable_app_db_private" {
 ################################################################################
 #                         Create Route Table Associations                      #
 ################################################################################
-resource "aws_main_route_table_association" "web_main" {
+resource "aws_main_route_table_association" "default_main" {
   vpc_id         = aws_vpc.tf_vpc.id
-  route_table_id = aws_route_table.tf_routetable_web_main.id
+  route_table_id = aws_vpc.tf_vpc.default_route_table_id
 }
 resource "aws_route_table_association" "web_subnet" {
   subnet_id      = aws_subnet.web.id
-  route_table_id = aws_route_table.tf_routetable_web_main.id
+  route_table_id = aws_route_table.tf_routetable_web_public.id
 }
 resource "aws_route_table_association" "app_subnet" {
   subnet_id      = aws_subnet.app.id
