@@ -89,6 +89,14 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
 ################################################################################
 #                          Create SSH Security Group                           #
 ################################################################################
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.tf_vpc.id
+  # this adds a tag to the default sg and removes all inbound/outbound rules
+  # making the default sg secure if it's used by mistake
+  tags = {
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-default-securitygroup", "-${random_id.demo_id.id}")
+  }
+}
 resource "aws_security_group" "wordpress" {
   name        = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-wordpress-securitygroup", "-${random_id.demo_id.id}")
   description = "allow ssh port 22 ipv4 in from my workstation ip and all ipv4 http in"
