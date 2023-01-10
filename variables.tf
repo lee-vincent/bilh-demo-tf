@@ -23,10 +23,14 @@ variable "wordpress_instance_type" {
 variable "bilh_aws_demo_master_key_name" {
   type = string
 }
+variable "bilh_aws_demo_master_key" {
+  type = string
+}
 variable "bilh_aws_demo_master_key_pub" {
   type      = string
   sensitive = true
 }
-variable "bilh_aws_demo_master_key" {
-  type = string
+variable "workstation_cidr" {
+  type      = string
+  sensitive = true
 }

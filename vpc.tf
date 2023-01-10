@@ -1,39 +1,6 @@
+# ensure unique tag names per run of demo
 resource "random_id" "demo_id" {
   byte_length = 4
-}
-resource "null_resource" "get_my_ip" {
-  # always check for a new workstation ip
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = "echo -n $(curl https://icanhazip.com --silent)/32 > ip.txt"
-  }
-}
-data "local_sensitive_file" "ip" {
-  depends_on = [
-    null_resource.get_my_ip,
-  ]
-  filename = "${path.module}/ip.txt"
-}
-resource "null_resource" "ip_check_modified" {
-  depends_on = [
-    data.local_sensitive_file.ip
-  ]
-  triggers = {
-    run_on_file_hash_change = md5(data.local_sensitive_file.ip.content)
-  }
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = "echo -n $(curl https://icanhazip.com --silent)/32 > updated_ip.txt"
-  }
-}
-data "local_sensitive_file" "updated_ip" {
-  depends_on = [
-    null_resource.ip_check_modified,
-  ]
-  filename = "${path.module}/updated_ip.txt"
 }
 ################################################################################
 #  Configure AWS provider (plugin) with AWS Region and AWS cli Profile to use  #
@@ -43,7 +10,9 @@ provider "aws" {
   profile = var.aws_profile
   default_tags {
     tags = {
-      automation = "terraform-managed"
+      automation = "terraform-managed",
+      # Name gets overridden by resource defined Name tag
+      Name = ""
     }
   }
 }
@@ -96,6 +65,10 @@ resource "aws_internet_gateway" "tf_internet_gateway" {
 #                    Create Elastic IP for NAT Gateway                         #
 ################################################################################
 resource "aws_eip" "tf_nat_gateway_eip" {
+  # best practoce to set an explicit dependency on the IGW
+  depends_on = [
+    aws_internet_gateway.tf_internet_gateway
+  ]
   vpc = true
   tags = {
     Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-nat-gateway-eip", "-${random_id.demo_id.id}")
@@ -116,32 +89,36 @@ resource "aws_nat_gateway" "tf_nat_gateway" {
 ################################################################################
 #                          Create SSH Security Group                           #
 ################################################################################
-resource "aws_security_group" "bastion" {
-  lifecycle {
-    create_before_destroy = true
-  }
-  name        = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion-securitygroup", "-${random_id.demo_id.id}")
-  description = "Allow inbound SSH from my workstation IP"
+resource "aws_security_group" "wordpress" {
+  name        = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-wordpress-securitygroup", "-${random_id.demo_id.id}")
+  description = "allow ssh port 22 ipv4 in from my workstation ip and all ipv4 http in"
   vpc_id      = aws_vpc.tf_vpc.id
   tags = {
-    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion-securitygroup", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-wordpress-securitygroup", "-${random_id.demo_id.id}")
   }
   ingress {
-    description = "allow ssh from my workstation ip"
+    description = "allow ssh port 22 ipv4 from my workstation ip"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${data.local_sensitive_file.updated_ip.content}"]
+    cidr_blocks = [var.workstation_cidr]
   }
   ingress {
-    description = "allow all inbound traffic from this security group"
+    description = "allow all traffic between this security group"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     self        = true
   }
+  ingress {
+    description = "allow http ipv4 in"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
-    description = "all outbound traffic"
+    description = "allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -209,21 +186,28 @@ resource "aws_key_pair" "bilh_demo_key_pair" {
     Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-keypair", "-${random_id.demo_id.id}")
   }
 }
-resource "aws_instance" "bastion_instance" {
+resource "aws_instance" "wordpress_instance" {
   ami                    = data.aws_ami.amazon_linux2.image_id
-  instance_type          = var.aws_bastion_instance_type
-  vpc_security_group_ids = [aws_security_group.bastion.id]
+  instance_type          = var.wordpress_instance_type
+  vpc_security_group_ids = [aws_security_group.wordpress.id]
   subnet_id              = aws_subnet.web.id
   key_name               = var.bilh_aws_demo_master_key_name
   tags = {
-    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-bastion", "-${random_id.demo_id.id}")
+    Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-wordpress", "-${random_id.demo_id.id}")
   }
-  user_data                   = <<-EOF
-    #!/bin/bash
-    touch /home/ec2-user/example-config-file
-    chown ec2-user:ec2-user /home/ec2-user/example-config-file
-    echo "some text" > /home/ec2-user/example-config-file
-  EOF
+  user_data                   = <<-EOF1
+    #!/bin/bash -xe
+    # STEP 1 - System Updates
+    yum -y update
+    yum -y upgrade
+    # STEP 2 - Install system software - including Web and DB
+    yum install -y mariadb-server httpd wget cowsay amazon-efs-utils
+    amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+    # STEP 3 - Web and DB Servers Online - and set to startup
+    systemctl enable httpd
+    systemctl start httpd
+    
+  EOF1
   associate_public_ip_address = true
 }
 # un-comment when running terraform import aws_instance.console_created instance-id
@@ -231,7 +215,7 @@ resource "aws_instance" "bastion_instance" {
 # resource "aws_instance" "console_created" {
 #   ami                    = "ami-0b5eea76982371e91"
 #   instance_type          = "t2.micro"
-#   vpc_security_group_ids = [aws_security_group.bastion.id]
+#   vpc_security_group_ids = [aws_security_group.wordpress.id]
 #   subnet_id              = aws_subnet.web.id
 #   key_name               = var.bilh_aws_demo_master_key_name
 #   tags = {

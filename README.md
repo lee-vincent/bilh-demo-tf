@@ -31,11 +31,11 @@ This is the description of the demo. As [John Gruber] writes on the [Markdown si
 - names
 - state files
 - local state
-- remote state
+- terraform cloud
+- migrate remote state to tfc
 - modules for something like wordpress?
 - packer for ami wordpress
 - github commit/pull request workflow
-- terraform cloud
 - import a resource
 - terraform import aws_instance.console_created i-06e725a25c0335c27
 - make sure the ami id matches - maybe use a data source

@@ -6,9 +6,8 @@ aws_prefix                    = "tf-"
 wordpress_instance_type       = "t3.large"
 bilh_aws_demo_master_key_name = "bilh-aws-demo-master-key"
 
-######################################
-# TF_VAR_local_environment_variables #
-######################################
+#######################################
+# TF_VAR_ local environment variables #
+#######################################
 # bilh_aws_demo_master_key_pub = TF_VAR_bilh_aws_demo_master_key_pub
-# bilh_aws_demo_master_key      = TF_VAR_bilh_aws_demo_master_key
-# rubrik_pass                   = TF_VAR_rubrik_pass
+# workstation_cidr             = TF_VAR_workstation_cidr
