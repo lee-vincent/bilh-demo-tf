@@ -26,6 +26,9 @@ This is the description of the demo. As [John Gruber] writes on the [Markdown si
 
 ## Agenda
 
+- deploy base vpc with instance
+- refactor base vpc into private module
+- new tf workspace with instance using the base vpc module and tfc exported outputs
 - implicit resource creation ordering/dependencies and dependson
 - resources
 - names
