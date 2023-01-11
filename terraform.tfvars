@@ -5,7 +5,6 @@ aws_zone                      = "a"
 aws_prefix                    = "tf-"
 wordpress_instance_type       = "t3.large"
 bilh_aws_demo_master_key_name = "bilh-aws-demo-master-key"
-
 #######################################
 # TF_VAR_ local environment variables #
 #######################################

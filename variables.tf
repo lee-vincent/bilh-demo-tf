@@ -1,3 +1,4 @@
+# AWS Variables
 variable "aws_profile" {
   type        = string
   description = "AWS iam user profile terraform will use to deploy"
@@ -30,7 +31,33 @@ variable "bilh_aws_demo_master_key_pub" {
   type      = string
   sensitive = true
 }
+# IP Address of SSH Client
 variable "workstation_cidr" {
   type      = string
   sensitive = true
+}
+# Wordpress Variables
+variable "wp_db_name" {
+  type        = string
+  sensitive   = true
+  default     = "bilhwordpress"
+  description = "database name for wordpress"
+}
+variable "wp_mariadb_user" {
+  type        = string
+  sensitive   = true
+  default     = "bilhwordpress"
+  description = "mariadb user for wordpress"
+}
+variable "wp_mariadb_user_pw" {
+  type        = string
+  sensitive   = true
+  default     = "bilhwordpress"
+  description = "password for the mariadb user for wordpress"
+}
+variable "wp_mariadb_root_pw" {
+  type        = string
+  sensitive   = true
+  default     = "bilhwordpress"
+  description = "root password for mariadb"
 }
