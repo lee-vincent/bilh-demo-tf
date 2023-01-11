@@ -223,7 +223,7 @@ resource "aws_instance" "wordpress_instance" {
     yum -y update
     yum -y upgrade
     # STEP 2 - Install system software - including Web and DB
-    yum install -y mariadb-server httpd wget cowsay
+    yum install -y mariadb-server httpd wget
     amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
     # STEP 3 - Web and DB Servers Online - and set to startup
     systemctl enable httpd
@@ -257,12 +257,6 @@ resource "aws_instance" "wordpress_instance" {
     echo "FLUSH PRIVILEGES;" >> /tmp/db.setup
     mysql -u root --password=$DBRootPassword < /tmp/db.setup
     sudo rm /tmp/db.setup
-    # STEP 8 COWSAY
-    echo "#!/bin/sh" > /etc/update-motd.d/40-cow
-    echo 'cowsay "BILH Wordpress Amazon Linux 2 AMI"' >> /etc/update-motd.d/40-cow
-    chmod 755 /etc/update-motd.d/40-cow
-    rm /etc/update-motd.d/30-banner
-    update-motd
   EOF1
   associate_public_ip_address = true
 }
