@@ -241,9 +241,9 @@ resource "aws_instance" "wordpress_instance" {
     rm latest.tar.gz
     # STEP 6 - Configure Wordpress
     cp ./wp-config-sample.php ./wp-config.php
-    sed -i "s/'database_name_here'/'${DBName}'/g" wp-config.php
-    sed -i "s/'username_here'/'${DBUser}'/g" wp-config.php
-    sed -i "s/'password_here'/'${DBPassword}'/g" wp-config.php
+    sed -i "s/'database_name_here'/'$DBName'/g" wp-config.php
+    sed -i "s/'username_here'/'$DBUser'/g" wp-config.php
+    sed -i "s/'password_here'/'$DBPassword'/g" wp-config.php
     # Step 6a - permissions   
     usermod -a -G apache ec2-user   
     chown -R ec2-user:apache /var/www
