@@ -47,6 +47,10 @@ Demo Description
 - data sources
 - terminate instance with console - run tf plan
 
+> A common use for multiple workspaces is to create a parallel, distinct copy of a set of infrastructure to test a set of changes before modifying production infrastructure.\
+
+[Terraform workspace use-cases][tfwsuc]
+
 ## Tech
 
 ## Installation
@@ -72,3 +76,4 @@ MIT
    [pvdnul]: <https://registry.terraform.io/providers/hashicorp/null/3.2.1>
    [pvdlcl]: <https://registry.terraform.io/providers/hashicorp/local/2.2.3>
    [pvdrnd]: <https://registry.terraform.io/providers/hashicorp/random/3.4.3>
+   [tfwsuc]: <https://developer.hashicorp.com/terraform/cli/workspaces#use-cases>
