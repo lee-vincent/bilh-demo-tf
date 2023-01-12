@@ -37,7 +37,7 @@ variable "bilh_aws_demo_master_key_pub" {
 }
 # IP Address of SSH Client
 variable "workstation_cidr" {
-  type      = string
+  type = string
   # sensitive = true
 }
 # Wordpress Variables

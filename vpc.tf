@@ -159,7 +159,7 @@ resource "aws_route_table" "tf_routetable_web_public" {
 resource "aws_route_table" "tf_routetable_app_db_private" {
   vpc_id = aws_vpc.tf_vpc.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
   tags = {
@@ -262,15 +262,14 @@ resource "aws_instance" "wordpress_instance" {
   associate_public_ip_address = true
 }
 # un-comment when running terraform import aws_instance.console_created instance-id
-# could i auto find the instance id using a data resource and special tag?
-# resource "aws_instance" "console_created" {
-#   ami                    = "ami-0b5eea76982371e91"
-#   instance_type          = "t2.micro"
-#   vpc_security_group_ids = [aws_security_group.wordpress.id]
-#   subnet_id              = aws_subnet.web.id
-#   key_name               = var.bilh_aws_demo_master_key_name
-#   tags = {
-#     Name       = "console-created",
-#   }
-#   associate_public_ip_address = true
-# }
+resource "aws_instance" "console_created" {
+  ami                    = aws_instance.wordpress_instance.ami
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.wordpress.id]
+  subnet_id              = aws_subnet.web.id
+  key_name               = var.bilh_aws_demo_master_key_name
+  tags = {
+    Name = "console-created",
+  }
+  associate_public_ip_address = true
+}

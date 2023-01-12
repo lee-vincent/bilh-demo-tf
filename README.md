@@ -16,15 +16,13 @@
 
 Demo Description
 
-> This will be a description
-> This will be a description
-> This will be a description
-> This will be a description
-> This will be a description
+> In this terraform demo we will introduce the terraform cli, aws infrastructure provisioning,
+> local state management, terraform cloud, remote state management, and github integration with
+> terraform cloud.
 
 ## Agenda
 
-- working with terraform cli locally and local state files as a solo developer
+1. working with terraform cli locally and local state files as a solo developer
    * deploy base vpc and wordpress ec2 instance
       * terraform init
       * terraform fmt
@@ -37,13 +35,13 @@ Demo Description
       * modify security group - ping example ping -DO public_ip
          * terraform plan
          * terraform apply
-      * delete ec2 instance example
-         * terraform plan
-         * terraform apply
    * what happens if someone creates a resource using the aws cli/console and we want terraform to manage it?
-      * create ec2 instance using aws cli/console
-         * aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-903004f8 --subnet-id subnet-6e7f829e
-      * terraform import
+      * use value of the terraform output: **output.aws_cli_command_create_ec2_instance** to create ec2 instance using aws cli/console
+      * uncomment last section of code in vpc.tf
+         * terraform import aws_instance.console_created replace_with_instance_id
+   * delete all infrastructure
+      * terraform destroy
+2. working with terraform cloud and remote state as a team of developers
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
 - implicit resource creation ordering/dependencies and dependson
