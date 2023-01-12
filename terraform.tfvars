@@ -1,6 +1,6 @@
 # AWS Variables
 aws_profile                   = "iamadmin-bilh-tf"
-environment = "prod"
+environment                   = "prod"
 aws_region                    = "us-east-1"
 aws_zone                      = "a"
 aws_prefix                    = "tf-"
