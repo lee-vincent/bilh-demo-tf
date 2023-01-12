@@ -46,6 +46,7 @@ Demo Description
 - local-exec scripting
 - data sources
 - terminate instance with console - run tf plan
+- tf workspaces with local state should correspond to git feature branches
 
 > A common use for multiple workspaces is to create a parallel, distinct copy of a set of infrastructure to test a set of changes before modifying production infrastructure.\
 
