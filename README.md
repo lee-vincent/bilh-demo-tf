@@ -24,7 +24,26 @@ Demo Description
 
 ## Agenda
 
-- deploy base vpc with instance
+- working with terraform cli locally and local state files as a solo developer
+   * deploy base vpc and wordpress ec2 instance
+      * terraform init
+      * terraform fmt
+      * terraform validate
+      * terraform plan
+      * terraform apply
+   * outputs
+   * inspect terraform.tfstate local state file
+   * what happens if we modify or delete a resource provisioned by terraform using the aws cli/console?
+      * modify security group - ping example ping -DO public_ip
+         * terraform plan
+         * terraform apply
+      * delete ec2 instance example
+         * terraform plan
+         * terraform apply
+   * what happens if someone creates a resource using the aws cli/console and we want terraform to manage it?
+      * create ec2 instance using aws cli/console
+         * aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-903004f8 --subnet-id subnet-6e7f829e
+      * terraform import
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
 - implicit resource creation ordering/dependencies and dependson

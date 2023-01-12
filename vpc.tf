@@ -160,7 +160,7 @@ resource "aws_route_table" "tf_routetable_app_db_private" {
   vpc_id = aws_vpc.tf_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.tf_nat_gateway.id
+    nat_gateway_id = aws_nat_gateway.tf_nat_gateway.id
   }
   tags = {
     Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-routetable-app-db-private", "-${random_id.demo_id.id}")
