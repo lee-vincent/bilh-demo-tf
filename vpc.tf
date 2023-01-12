@@ -10,6 +10,7 @@ provider "aws" {
   profile = var.aws_profile
   default_tags {
     tags = {
+      environment = var.environment
       automation = "terraform-managed",
       # Name gets overridden by resource defined Name tag
       Name = ""

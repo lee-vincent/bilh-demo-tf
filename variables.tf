@@ -3,6 +3,10 @@ variable "aws_profile" {
   type        = string
   description = "AWS iam user profile terraform will use to deploy"
 }
+variable "environment" {
+  type        = string
+  description = "Infrastructure environment - dev, test, prod, etc."
+}
 variable "aws_region" {
   type    = string
   default = "us-east-1"
