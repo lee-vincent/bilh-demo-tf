@@ -48,13 +48,14 @@ local-exec
          ```
       * notice how ICMP rule is removed so security group matches the terraform config
    * what happens if someone creates a resource using the aws cli/console and we want terraform to manage it?
-      * use value of the terraform output: **output.aws_cli_command_create_ec2_instance** to create ec2 instance using aws cli/console
+      * use value of the terraform output: **output.aws_cli_command_create_ec2_instance** to create ec2 instance using aws cli
       * **copy the command from the terraform output value output.aws_cli_command_create_ec2_instance, it will look similar to the below**
          ```ssh
          aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type t2.micro --key-name bilh-aws-demo-master-key --security-group-ids sg-0349a357ce3af89c1 --subnet-id subnet-0872df4f05d481829 --no-associate-public-ip-address --profile iamadmin-bilh-tf
          ```
       * copy the newly created instance's InstanceId from the aws cli ouput - e.g. i-0eba8bc0d6a8efdcc
       * uncomment last section of code in vpc.tf
+      * import the aws cli cli_created instance into our terraform config
          ```ssh
          terraform import aws_instance.cli_created replace_with_instance_id
          ```
@@ -64,12 +65,13 @@ local-exec
          terraform plan
          terraform apply
          ```
-      * cli_created instance should now show our standar tags
+      * cli_created instance should now show our standard tags
       * delete all infrastructure
          ```ssh
          terraform destroy
          ```
 2. working with terraform cloud and remote state as a team of developers
+   * review terraform cloud workspace and connection to GitHub
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
 
