@@ -91,6 +91,8 @@ terraform workspace list
 terraform plan
 ```
    * commit changes to the branch
+   * generate pull request
+   * merge
 
 
 
