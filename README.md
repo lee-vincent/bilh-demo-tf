@@ -53,10 +53,22 @@ local-exec
          ```ssh
          aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type t2.micro --key-name bilh-aws-demo-master-key --security-group-ids sg-0349a357ce3af89c1 --subnet-id subnet-0872df4f05d481829 --no-associate-public-ip-address --profile iamadmin-bilh-tf
          ```
+      * copy the newly created instance's InstanceId from the aws cli ouput - e.g. i-0eba8bc0d6a8efdcc
       * uncomment last section of code in vpc.tf
-         * terraform import aws_instance.console_created replace_with_instance_id
-   * delete all infrastructure
-      * terraform destroy
+         ```ssh
+         terraform import aws_instance.cli_created replace_with_instance_id
+         ```
+      * find aws_instance.cli_created in terraform.tfstate file to show it is under terraform management
+      * go to aws console to the cli_created instance's tags - there should be no tags yet
+         ```ssh
+         terraform plan
+         terraform apply
+         ```
+      * cli_created instance should now show our standar tags
+      * delete all infrastructure
+         ```ssh
+         terraform destroy
+         ```
 2. working with terraform cloud and remote state as a team of developers
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
