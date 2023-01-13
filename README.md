@@ -31,14 +31,25 @@ Demo Description
       terraform plan
       terraform apply
       ```
-   * outputs
+   * review outputs
    * inspect terraform.tfstate local state file
    * what happens if we modify or delete a resource provisioned by terraform using the aws cli/console?
-      * modify security group - ping example ping -DO public_ip
-         * terraform plan
-         * terraform apply
+      * start trying to ping ec2 instance
+         ```ssh
+         ping -DO public_ip
+         ```
+      * modify security group - add all ICMP in via aws console
+         ```ssh
+         terraform plan
+         terraform apply
+         ```
+      * notice how ICMP rule is removed so security group matches the terraform config
    * what happens if someone creates a resource using the aws cli/console and we want terraform to manage it?
       * use value of the terraform output: **output.aws_cli_command_create_ec2_instance** to create ec2 instance using aws cli/console
+      * **replace these values with the terraform output values**
+         ```ssh
+         aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type t2.micro --key-name bilh-aws-demo-master-key --security-group-ids sg-0349a357ce3af89c1 --subnet-id subnet-0872df4f05d481829 --associate-public-ip-address false --profile iamadmin-bilh-tf
+         ```
       * uncomment last section of code in vpc.tf
          * terraform import aws_instance.console_created replace_with_instance_id
    * delete all infrastructure
