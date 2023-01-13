@@ -24,11 +24,13 @@ Demo Description
 
 1. working with terraform cli locally and local state files as a solo developer
    * deploy base vpc and wordpress ec2 instance
-      * terraform init
-      * terraform fmt
-      * terraform validate
-      * terraform plan
-      * terraform apply
+      ```sh
+      terraform init
+      terraform fmt
+      terraform validate
+      terraform plan
+      terraform apply
+      ```
    * outputs
    * inspect terraform.tfstate local state file
    * what happens if we modify or delete a resource provisioned by terraform using the aws cli/console?
@@ -44,25 +46,12 @@ Demo Description
 2. working with terraform cloud and remote state as a team of developers
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
-- implicit resource creation ordering/dependencies and dependson
-- resources
-- names
-- state files
-- local state
-- terraform cloud
+
 - migrate remote state to tfc
 - modules for something like wordpress?
 - packer for ami wordpress
 - github commit/pull request workflow
-- import a resource
-- terraform import aws_instance.console_created i-06e725a25c0335c27
-- make sure the ami id matches - maybe use a data source
-- what about ebs snapshots with commvault?
-- terraform functions
-- variables
 - local-exec scripting
-- data sources
-- terminate instance with console - run tf plan
 - tf workspaces with local state should correspond to git feature branches
 
 > A common use for multiple workspaces is to create a parallel, distinct copy of a set of infrastructure to test a set of changes before modifying production infrastructure.\

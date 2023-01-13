@@ -262,14 +262,14 @@ resource "aws_instance" "wordpress_instance" {
   associate_public_ip_address = true
 }
 # un-comment when running terraform import aws_instance.console_created instance-id
-resource "aws_instance" "console_created" {
-  ami                    = aws_instance.wordpress_instance.ami
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.wordpress.id]
-  subnet_id              = aws_subnet.web.id
-  key_name               = var.ssh_key_name
-  tags = {
-    Name = "console-created",
-  }
-  associate_public_ip_address = true
-}
+# resource "aws_instance" "console_created" {
+#   ami                    = aws_instance.wordpress_instance.ami
+#   instance_type          = "t2.micro"
+#   vpc_security_group_ids = [aws_security_group.wordpress.id]
+#   subnet_id              = aws_subnet.web.id
+#   key_name               = var.ssh_key_name
+#   tags = {
+#     Name = "console-created",
+#   }
+#   associate_public_ip_address = false
+# }
