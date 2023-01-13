@@ -73,13 +73,27 @@ terraform destroy
 2. working with terraform cloud and remote state as a team of developers
 [![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Ftfc-gh-actions-workflow.png)][https://developer.hashicorp.com/terraform/tutorials/automation/github-actions]
    * review terraform cloud workspace and connection to GitHub
-   * un-comment terraform cloud config in versions.tf
-   * log in to terraform cloud and re-initialize workspace
+      * create a new api-driven Terraform Cloud workspace named bilh-tf-gh-actions-demo
+      * set workspace variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+      * [Create Token named **GitHub Actions**][tfghat]
+      * Create new GitHub repository secret named **TF_API_TOKEN** with a value of the **GitHub Actions** terraform cloud token
+         * make sure GitHub Actions has read/write permissions
+      * create new branch to update terraform cloud backend and workspace
 ```sh
-terraform login
+git checkout -b 'update-tfc-backend'
+```
+   * copy .github workflows into directory to provide github action definitions
+   * un-comment terraform cloud config in versions.tf
+   * re-initialize tfc workspace
+```sh
 terraform init
 terraform workspace list
+terraform plan
 ```
+   * commit changes to the branch
+
+
+
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
 
@@ -113,3 +127,4 @@ MIT
    [pvdlcl]: <https://registry.terraform.io/providers/hashicorp/local/2.2.3>
    [pvdrnd]: <https://registry.terraform.io/providers/hashicorp/random/3.4.3>
    [tfwsuc]: <https://developer.hashicorp.com/terraform/cli/workspaces#use-cases>
+   [tfghat]: <https://app.terraform.io/app/settings/tokens?product_intent=terraform&utm_source=learn>
