@@ -198,8 +198,8 @@ data "aws_ami" "amazon_linux2" {
   }
 }
 resource "aws_key_pair" "bilh_demo_key_pair" {
-  key_name   = var.bilh_aws_demo_master_key_name
-  public_key = var.bilh_aws_demo_master_key_pub
+  key_name   = var.ssh_key_name
+  public_key = var.ssh_key_pub
   tags = {
     Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-keypair", "-${random_id.demo_id.id}")
   }
@@ -209,7 +209,7 @@ resource "aws_instance" "wordpress_instance" {
   instance_type          = var.wordpress_instance_type
   vpc_security_group_ids = [aws_security_group.wordpress.id]
   subnet_id              = aws_subnet.web.id
-  key_name               = var.bilh_aws_demo_master_key_name
+  key_name               = var.ssh_key_name
   tags = {
     Name = format("%s%s%s%s", var.aws_prefix, var.aws_region, "-wordpress", "-${random_id.demo_id.id}")
   }
@@ -267,7 +267,7 @@ resource "aws_instance" "console_created" {
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.wordpress.id]
   subnet_id              = aws_subnet.web.id
-  key_name               = var.bilh_aws_demo_master_key_name
+  key_name               = var.ssh_key_name
   tags = {
     Name = "console-created",
   }
