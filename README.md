@@ -78,6 +78,7 @@ terraform destroy
 ```sh
 mv github-actions/.github/ .
 ```
+   * commit changes to github
    * review terraform cloud workspace and connection to GitHub
       * create a new api-driven Terraform Cloud workspace named bilh-tf-gh-actions-demo
       * set workspace variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
