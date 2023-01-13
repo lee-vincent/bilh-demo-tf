@@ -71,7 +71,13 @@ terraform apply
 terraform destroy
 ```
 2. working with terraform cloud and remote state as a team of developers
-[![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Ftfc-gh-actions-workflow.png)][https://developer.hashicorp.com/terraform/tutorials/automation/github-actions]
+[![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Ftfc-gh-actions-workflow.png)](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
+   
+   [![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Fpr-master-gh-actions-workflow.png)]((https://developer.hashicorp.com/terraform/tutorials/automation/github-actions))
+   * create github actions folder and commit to master
+```sh
+mv github-actions/.github/ .
+```
    * review terraform cloud workspace and connection to GitHub
       * create a new api-driven Terraform Cloud workspace named bilh-tf-gh-actions-demo
       * set workspace variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
@@ -82,8 +88,8 @@ terraform destroy
 ```sh
 git checkout -b 'update-tfc-backend'
 ```
-   * copy .github workflows into directory to provide github action definitions
    * un-comment terraform cloud config in versions.tf
+   * un-comment ec2 instance_3 in vpc.tf
    * re-initialize tfc workspace
 ```sh
 terraform init
@@ -96,27 +102,9 @@ terraform plan
 
 
 
-- refactor base vpc into private module
-- new tf workspace with instance using the base vpc module and tfc exported outputs
-
-- migrate remote state to tfc
-- modules for something like wordpress?
-- packer for ami wordpress
-- github commit/pull request workflow
-- local-exec scripting
-- tf workspaces with local state should correspond to git feature branches
-
 > A common use for multiple workspaces is to create a parallel, distinct copy of a set of infrastructure to test a set of changes before modifying production infrastructure.\
 
 [Terraform workspace use-cases][tfwsuc]
-
-## Tech
-
-> Note:
-
-```sh
-terraform plan
-```
 
 ## License
 
