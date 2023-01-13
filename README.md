@@ -101,6 +101,9 @@ terraform plan
    * commit changes to the branch
    * generate pull request
    * merge
+   * queue destroy in tfc
+   * delete tfc workspace
+   * merge reset-demo branch to master
 
 
 
