@@ -3,11 +3,10 @@ resource "random_id" "demo_id" {
   byte_length = 4
 }
 ################################################################################
-#  Configure AWS provider (plugin) with AWS Region and AWS cli Profile to use  #
+#            Configure AWS provider (plugin) with AWS Region to use            #
 ################################################################################
 provider "aws" {
   region  = var.aws_region
-  # profile = var.aws_profile
   default_tags {
     tags = {
       environment = var.environment
