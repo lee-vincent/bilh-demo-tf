@@ -285,10 +285,10 @@ resource "aws_instance" "wordpress_instance" {
 #   associate_public_ip_address = false
 # }
 # use a module hosted on github to provision our wordpress instance
-module "wordpress-ec2" {
-  source               = "github.com/lee-vincent/terraform-aws-ec2-wordpress.git"
-  wp_security_group_id = aws_security_group.wordpress.id
-  wp_subnet_id         = aws_subnet.web.id
-  wp_ami_id            = data.aws_ami.amazon_linux2.image_id
-  ssh_key_name         = var.ssh_key_name
-} 
+# module "wordpress-ec2" {
+#   source               = "github.com/lee-vincent/terraform-aws-ec2-wordpress.git"
+#   wp_security_group_id = aws_security_group.wordpress.id
+#   wp_subnet_id         = aws_subnet.web.id
+#   wp_ami_id            = data.aws_ami.amazon_linux2.image_id
+#   ssh_key_name         = var.ssh_key_name
+# } 
