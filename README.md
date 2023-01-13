@@ -27,51 +27,58 @@ local-exec
 
 1. working with terraform cli locally and local state files as a solo developer
    * deploy base vpc and wordpress ec2 instance
-      ```sh
-      terraform init
-      terraform fmt
-      terraform validate
-      terraform plan
-      terraform apply
-      ```
+```sh
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+```
    * review outputs
    * inspect terraform.tfstate local state file
    * what happens if we modify or delete a resource provisioned by terraform using the aws cli/console?
       * start trying to ping ec2 instance
-         ```ssh
-         ping -DO public_ip
-         ```
+```sh
+ping -DO public_ip
+```
       * modify security group - add all ICMP in via aws console
-         ```ssh
-         terraform plan
-         terraform apply
-         ```
+```sh
+terraform plan
+terraform apply
+```
       * notice how ICMP rule is removed so security group matches the terraform config
    * what happens if someone creates a resource using the aws cli/console and we want terraform to manage it?
       * use value of the terraform output: **output.aws_cli_command_create_ec2_instance** to create ec2 instance using aws cli
       * **copy the command from the terraform output value output.aws_cli_command_create_ec2_instance, it will look similar to the below**
-         ```ssh
-         aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type t2.micro --key-name bilh-aws-demo-master-key --security-group-ids sg-0349a357ce3af89c1 --subnet-id subnet-0872df4f05d481829 --no-associate-public-ip-address --profile iamadmin-bilh-tf
-         ```
+```sh
+aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type t2.micro --key-name bilh-aws-demo-master-key --security-group-ids sg-0349a357ce3af89c1 --subnet-id subnet-0872df4f05d481829 --no-associate-public-ip-address --profile iamadmin-bilh-tf
+```
       * copy the newly created instance's InstanceId from the aws cli ouput - e.g. i-0eba8bc0d6a8efdcc
       * uncomment last section of code in vpc.tf
       * import the aws cli cli_created instance into our terraform config
-         ```ssh
-         terraform import aws_instance.cli_created replace_with_instance_id
-         ```
+```sh
+terraform import aws_instance.cli_created replace_with_instance_id
+```
       * find aws_instance.cli_created in terraform.tfstate file to show it is under terraform management
       * go to aws console to the cli_created instance's tags - there should be no tags yet
-         ```ssh
-         terraform plan
-         terraform apply
-         ```
+```sh
+terraform plan
+terraform apply
+```
       * cli_created instance should now show our standard tags
       * delete all infrastructure
-         ```ssh
-         terraform destroy
-         ```
+```sh
+terraform destroy
+```
 2. working with terraform cloud and remote state as a team of developers
    * review terraform cloud workspace and connection to GitHub
+   * un-comment terraform cloud config in versions.tf
+   * log in to terraform cloud and re-initialize workspace
+```sh
+terraform login
+terraform init
+terraform workspace list
+```
 - refactor base vpc into private module
 - new tf workspace with instance using the base vpc module and tfc exported outputs
 

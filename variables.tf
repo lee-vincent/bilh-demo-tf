@@ -1,8 +1,8 @@
 # AWS Variables
-variable "aws_profile" {
-  type        = string
-  description = "AWS iam user profile terraform will use to deploy"
-}
+# variable "aws_profile" {
+#   type        = string
+#   description = "AWS iam user profile terraform will use to deploy"
+# }
 variable "environment" {
   type        = string
   description = "Infrastructure environment - dev, test, prod, etc."

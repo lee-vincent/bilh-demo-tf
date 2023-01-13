@@ -14,9 +14,9 @@ output "security_group_id" {
 output "web_subnet_id" {
   value = aws_subnet.web.id
 }
-output "aws_profile" {
-  value = var.aws_profile
-}
+# output "aws_profile" {
+#   value = var.aws_profile
+# }
 output "aws_cli_command_create_ec2_instance" {
-  value = "aws ec2 run-instances --image-id ${aws_instance.wordpress_instance.ami} --count 1 --instance-type t2.micro --key-name ${aws_key_pair.bilh_demo_key_pair.key_name} --security-group-ids ${aws_security_group.wordpress.id} --subnet-id ${aws_subnet.web.id} --no-associate-public-ip-address --profile ${var.aws_profile}"
+  value = "aws ec2 run-instances --image-id ${aws_instance.wordpress_instance.ami} --count 1 --instance-type t2.micro --key-name ${aws_key_pair.bilh_demo_key_pair.key_name} --security-group-ids ${aws_security_group.wordpress.id} --subnet-id ${aws_subnet.web.id} --no-associate-public-ip-address"
 }
