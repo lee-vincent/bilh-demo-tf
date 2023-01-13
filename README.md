@@ -96,13 +96,6 @@ terraform workspace list
 
 ## Tech
 
-## Installation
-
-Install the dependencies
-
-```sh
-```
-
 > Note:
 
 ```sh
