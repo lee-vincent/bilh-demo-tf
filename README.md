@@ -55,6 +55,7 @@ aws ec2 run-instances --image-id ami-0fe472d8a85bc7b0e --count 1 --instance-type
 ```
    * copy the newly created instance's InstanceId from the aws cli ouput - e.g. i-0eba8bc0d6a8efdcc
    * uncomment last section of code in vpc.tf
+   * commit changes to github
    * import the aws cli cli_created instance into our terraform config
 ```sh
 terraform import aws_instance.cli_created replace_with_instance_id
