@@ -22,9 +22,6 @@ Demo Description
 
 ## Agenda
 
-conditional create
-local-exec
-
 1. working with terraform cli locally and local state files as a solo developer
    * deploy base vpc and wordpress ec2 instance
 ```sh
@@ -67,10 +64,7 @@ terraform plan
 terraform apply
 ```
    * cli_created instance should now show our standard tags
-   * delete all infrastructure
-```sh
-terraform destroy
-```
+
 2. working with terraform cloud and remote state as a team of developers
 [![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Ftfc-gh-actions-workflow.png)](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
    
@@ -105,9 +99,6 @@ terraform plan
    * delete tfc workspace
    * merge reset-demo branch to master
 
-
-
-> A common use for multiple workspaces is to create a parallel, distinct copy of a set of infrastructure to test a set of changes before modifying production infrastructure.\
 
 [Terraform workspace use-cases][tfwsuc]
 
