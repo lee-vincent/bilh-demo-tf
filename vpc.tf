@@ -261,34 +261,34 @@ resource "aws_instance" "wordpress_instance" {
   associate_public_ip_address = true
 }
 # un-comment when running terraform import aws_instance.cli_created instance-id
-resource "aws_instance" "cli_created" {
-  ami                    = aws_instance.wordpress_instance.ami
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.wordpress.id]
-  subnet_id              = aws_subnet.web.id
-  key_name               = var.ssh_key_name
-  tags = {
-    Name = "console-created",
-  }
-  associate_public_ip_address = false
-}
+# resource "aws_instance" "cli_created" {
+#   ami                    = aws_instance.wordpress_instance.ami
+#   instance_type          = "t2.micro"
+#   vpc_security_group_ids = [aws_security_group.wordpress.id]
+#   subnet_id              = aws_subnet.web.id
+#   key_name               = var.ssh_key_name
+#   tags = {
+#     Name = "console-created",
+#   }
+#   associate_public_ip_address = false
+# }
 # un-comment when running for terraform cloud
-resource "aws_instance" "instance_3" {
-  ami                    = aws_instance.wordpress_instance.ami
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.wordpress.id]
-  subnet_id              = aws_subnet.web.id
-  key_name               = var.ssh_key_name
-  tags = {
-    Name = "terraform-cloud",
-  }
-  associate_public_ip_address = false
-}
+# resource "aws_instance" "instance_3" {
+#   ami                    = aws_instance.wordpress_instance.ami
+#   instance_type          = "t2.micro"
+#   vpc_security_group_ids = [aws_security_group.wordpress.id]
+#   subnet_id              = aws_subnet.web.id
+#   key_name               = var.ssh_key_name
+#   tags = {
+#     Name = "terraform-cloud",
+#   }
+#   associate_public_ip_address = false
+# }
 # use a module hosted on github to provision our wordpress instance
-module "wordpress-ec2" {
-  source               = "github.com/lee-vincent/terraform-aws-ec2-wordpress.git"
-  wp_security_group_id = aws_security_group.wordpress.id
-  wp_subnet_id         = aws_subnet.web.id
-  wp_ami_id            = data.aws_ami.amazon_linux2.image_id
-  ssh_key_name         = var.ssh_key_name
-}
+# module "wordpress-ec2" {
+#   source               = "github.com/lee-vincent/terraform-aws-ec2-wordpress.git"
+#   wp_security_group_id = aws_security_group.wordpress.id
+#   wp_subnet_id         = aws_subnet.web.id
+#   wp_ami_id            = data.aws_ami.amazon_linux2.image_id
+#   ssh_key_name         = var.ssh_key_name
+# }
