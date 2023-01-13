@@ -18,8 +18,5 @@ output "aws_profile" {
   value = var.aws_profile
 }
 output "aws_cli_command_create_ec2_instance" {
-  value = "aws ec2 run-instances --image-id ${aws_instance.wordpress_instance.ami} --count 1 --instance-type t2.micro --key-name ${aws_key_pair.bilh_demo_key_pair.key_name} --security-group-ids ${aws_security_group.wordpress.id} --subnet-id ${aws_subnet.web.id} --associate-public-ip-address false --profile ${var.aws_profile}"
+  value = "aws ec2 run-instances --image-id ${aws_instance.wordpress_instance.ami} --count 1 --instance-type t2.micro --key-name ${aws_key_pair.bilh_demo_key_pair.key_name} --security-group-ids ${aws_security_group.wordpress.id} --subnet-id ${aws_subnet.web.id} --no-associate-public-ip-address --profile ${var.aws_profile}"
 }
-# output "imported_console_created_instance_public_ip" {
-#   value = aws_instance.console_created.public_ip
-# }
