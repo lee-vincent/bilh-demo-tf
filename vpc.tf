@@ -6,7 +6,7 @@ resource "random_id" "demo_id" {
 #            Configure AWS provider (plugin) with AWS Region to use            #
 ################################################################################
 provider "aws" {
-  region  = var.aws_region
+  region = var.aws_region
   default_tags {
     tags = {
       environment = var.environment
