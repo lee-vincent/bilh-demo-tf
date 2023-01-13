@@ -38,6 +38,8 @@ variable "ssh_key_pub" {
 # IP Address of SSH Client
 variable "workstation_cidr" {
   type = string
+  description = "public ip address of ssh client that will be used in security groups providing access to wordpress ec2 instance"
+  default = "0.0.0.0/0"
 }
 # Wordpress Variables
 variable "wp_db_name" {
