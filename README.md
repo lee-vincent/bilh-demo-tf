@@ -21,7 +21,25 @@ Demo Description
 > terraform cloud.
 
 ## Agenda
-
+0. Local environment setup
+   * Install terraform cli
+```sh
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get update && sudo apt-get install terraform
+terraform -install-autocomplete
+```
+   * Generate ssh public/private keypair that will be used to ssh into provisioned ec2 instance and export variables to local environment
+```sh
+export TF_VAR_ssh_key_name='bilh-demo-tf-wordpress-ec2'
+ssh-keygen -b 3072 -C $TF_VAR_ssh_key_name -f ~/.ssh/$TF_VAR_ssh_key_name -t rsa
+export TF_VAR_ssh_key_pub=$(cat ~/.ssh/$TF_VAR_ssh_key_name.pub)
+```
+   * Set the AWS account credentials terraform cli will use to access your AWS account
+```sh
+export AWS_ACCESS_KEY_ID=xxxxxxxxxxxx
+export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
 1. working with terraform cli locally and local state files as a solo developer
    * deploy base vpc and wordpress ec2 instance
 ```sh
@@ -71,7 +89,7 @@ terraform apply
    [![GitHub](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Fautomation%2Fpr-master-gh-actions-workflow.png)]((https://developer.hashicorp.com/terraform/tutorials/automation/github-actions))
    * create github actions folder and commit to master
 ```sh
-mv github-actions/.github/ .
+cp -r github-actions/.github/ .
 ```
    * commit changes to github
    * review terraform cloud workspace and connection to GitHub
